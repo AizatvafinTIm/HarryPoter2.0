@@ -8,9 +8,9 @@ import java.util.*;
 public class Main {
     static int COLS = 9;
     static int ROWS = 9;
+    static HashMap<Integer, Character> attributes;
     static int min_steps = Integer.MAX_VALUE;
     static HashMap<Pair<Integer, Integer>, Pair<Pair<Integer, Integer>, Integer>> backtracking_path;
-    static int numberOfChars = 6;
     static Pair<Integer, Integer> F;
     static Pair<Integer, Integer> N;
     static Pair<Integer, Integer> C;
@@ -18,8 +18,10 @@ public class Main {
     static Pair<Integer, Integer> E;
     static int size_ans = Integer.MAX_VALUE;
     static ArrayList<Pair<Integer, Integer>> ans_way;
+    static int number_of_steps = 0;
+    static long time = 0;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 
         System.out.println("Which scenario would you like to see: 1 or 2");
         Scanner in = new Scanner(System.in);
@@ -39,7 +41,7 @@ public class Main {
 
         in.nextLine();
         HashSet<Pair<Integer, Integer>> inspectors_zone = new HashSet<>();
-        HashMap<Integer, Character> attributes = new HashMap<>();
+        attributes = new HashMap<>();
         attributes.put(0, '-');
         attributes.put(1, 'P');
         attributes.put(2, 'F');
@@ -47,9 +49,12 @@ public class Main {
         attributes.put(4, 'B');
         attributes.put(5, 'C');
         attributes.put(6, 'E');
+        attributes.put(7, '#');
 
         if (inputFormat == 1) {
             grid[0][0] = 1;
+            ArrayList<Pair<Integer,Integer>> coords = new ArrayList<>();
+            coords.add(new Pair<>(0,0));
             for (int i = 0; i < ROWS; ++i) {
                 for (int j = 0; j < COLS; ++j) {
                     if (i == 0 && j == 0) continue;
@@ -75,6 +80,7 @@ public class Main {
                             }
                         }
                     }
+
                 } else if (i == 2) {
                     N = new Pair<>(x, y);
                     for (int j = x - 1; j < x + 2; ++j) {
@@ -99,8 +105,19 @@ public class Main {
                 if (i == 5) E = new Pair<>(x, y);
                 grid[x][y] = i + 1;
 
+
             }
+            coords.add(F);
+            coords.add(N);
+            coords.add(B);
+            coords.add(C);
+            coords.add(E);
+
             show(grid, attributes);
+            if(inspectors_zone.contains(new Pair<>(0,0))){
+                System.out.println("Potter was caught immediately");
+                return;
+            }
             HashSet<Pair<Integer, Integer>> inspect_1 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
             HashSet<Pair<Integer, Integer>> inspect_2 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
             first_method(grid, inspect_1,scenario);
@@ -203,7 +220,12 @@ public class Main {
                 grid[x][y] = i + 1;
 
             }
+
             show(grid, attributes);
+            if(inspectors_zone.contains(new Pair<>(0,0))){
+                System.out.println("Potter was caught immediately");
+                return;
+            }
             HashSet<Pair<Integer, Integer>> inspect_1 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
             HashSet<Pair<Integer, Integer>> inspect_2 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
             first_method(grid, inspect_1, scenario);
@@ -212,7 +234,7 @@ public class Main {
         }
     }
 
-    public static void second_method(int[][] grid, HashMap<Integer, Character> attributes, HashSet<Pair<Integer, Integer>> inspectors_zone,int scenario) {
+    public static void second_method(int[][] grid, HashMap<Integer, Character> attributes, HashSet<Pair<Integer, Integer>> inspectors_zone,int scenario) throws InterruptedException {
         System.out.println("----------------------BFS------------------------");
         HashSet<Pair<Integer, Integer>> small_inspectors_zone = new HashSet<>();
         small_inspectors_zone.add(N);
@@ -221,6 +243,8 @@ public class Main {
         Pair<Integer, Integer> start = new Pair<>(0, 0);
         Pair<Integer, Integer> dest;
         ArrayList<Pair<Integer, Integer>> way_to_book_from_start = new ArrayList<>();
+        long start_time = System.nanoTime();
+
         Pair<HashMap<Pair<Integer, Integer>, Pair<Integer, Integer>>, Pair<Integer, Integer>> bfs_bs = bfs(grid, start, 4, inspectors_zone, scenario);
         dest = bfs_bs.getValue();
         way_to_book_from_start = recovering_path_bfs(start, dest, bfs_bs.getKey());
@@ -271,6 +295,10 @@ public class Main {
         start = C;
         ArrayList<Pair<Integer, Integer>> way_to_door_from_cloak = new ArrayList<>();
         bfs_bs = bfs(grid, start, 6, small_inspectors_zone,scenario);
+        Thread.sleep(0);
+        long finish = System.nanoTime();
+        long elapsed = finish - start_time;
+        time = elapsed;
         dest = bfs_bs.getValue();
         way_to_door_from_cloak = recovering_path_bfs(start, dest, bfs_bs.getKey());
         ways.put("CE", way_to_door_from_cloak);
@@ -289,7 +317,7 @@ public class Main {
                 System.out.println("Harry Potter was caught. You've lost:(");
             }
             else{
-                show_ans(ans_way);
+                show_ans(grid,ans_way);
             }
         }
         else{
@@ -303,7 +331,7 @@ public class Main {
                 }
             }
             if(!is_caught){
-                show_ans(ans_way);
+                show_ans(grid,ans_way);
             }
         }
 
@@ -312,8 +340,10 @@ public class Main {
         size_ans = Integer.MAX_VALUE;
     }
 
-    public static void first_method(int[][] grid, HashSet<Pair<Integer, Integer>> inspectors_zone,int scenario) {
+    public static void first_method(int[][] grid, HashSet<Pair<Integer, Integer>> inspectors_zone,int scenario) throws InterruptedException {
         System.out.println("-----------------Backtracking--------------------");
+
+
 
         HashSet<Pair<Integer, Integer>> small_inspectors_zone = new HashSet<>();
         small_inspectors_zone.add(N);
@@ -324,6 +354,7 @@ public class Main {
         Pair<Integer, Integer> start = new Pair<>(0, 0);
         Pair<Integer, Integer> dest = B;
         ArrayList<Pair<Integer, Integer>> way_to_book_from_start = new ArrayList<>();
+        long start_time = System.nanoTime();
         backtracking(grid, start, 4, 0, inspectors_zone, scenario);
         way_to_book_from_start = recovering_path_backtrack(start, dest);
         backtracking_path.clear();
@@ -367,6 +398,10 @@ public class Main {
         start = B;
         ArrayList<Pair<Integer, Integer>> way_to_door_wth_cloak = new ArrayList<>();
         backtracking(grid, start, 6, 0, small_inspectors_zone, scenario);
+        Thread.sleep(0);
+        long finish = System.nanoTime();
+        long elapsed = finish - start_time;
+        time = elapsed;
         way_to_door_wth_cloak = recovering_path_backtrack(start, dest);
         ways.put("BE1", way_to_door_wth_cloak);
         backtracking_path.clear();
@@ -398,7 +433,7 @@ public class Main {
                 System.out.println("Harry Potter was caught. You've lost:(");
             }
             else{
-                show_ans(ans_way);
+                show_ans(grid,ans_way);
             }
         }
         else{
@@ -412,7 +447,7 @@ public class Main {
                 }
             }
             if(!is_caught){
-                show_ans(ans_way);
+                show_ans(grid,ans_way);
             }
         }
 
@@ -508,7 +543,27 @@ public class Main {
         }
     }
 
-    public static void show_ans(ArrayList<Pair<Integer, Integer>> ans){
+    public static void show_ans(int[][] grid,ArrayList<Pair<Integer, Integer>> ans){
+        int[][] updated_grid = new int[ROWS][COLS];
+        for(int i = 0; i < ROWS; ++i){
+            for (int j = 0; j < COLS; j++) {
+                updated_grid[i][j] = grid[i][j];
+            }
+        }
+        for (Pair<Integer, Integer> an : ans) {
+            int x = an.getKey();
+            int y = an.getValue();
+            if(updated_grid[x][y] == 0) {
+                updated_grid[x][y] = 7;
+            }
+        }
+        show(updated_grid,attributes);
+        System.out.print("Number of steps: ");
+        System.out.println(number_of_steps);
+        System.out.print("Time: ");
+        System.out.print((float)time/1000000000);
+        System.out.println(" sec.");
+        number_of_steps = 0;
         System.out.println("Way to door:");
         for(int i = ans.size() - 1; i > -1;--i){
             if (i > 0) {
@@ -539,6 +594,7 @@ public class Main {
         visited.put(start, start);
         while (!queue.isEmpty()) {
             Pair<Integer, Integer> cur_node = queue.poll();
+            number_of_steps++;
             if (grid[cur_node.getKey()][cur_node.getValue()] == idOfitem) {
                 dest = new Pair<>(cur_node.getKey(), cur_node.getValue());
                 break;
@@ -564,6 +620,7 @@ public class Main {
                 min_steps = steps;
                 return;
             }
+            number_of_steps++;
             ArrayList<Pair<Integer, Integer>> next_nodes = get_next_nodes(node, inspectors_zone, scenario);
             for (Pair<Integer, Integer> next_node : next_nodes) {
                 if (backtracking_path.containsKey(next_node) && backtracking_path.get(next_node).getValue() >= steps + 1) {
