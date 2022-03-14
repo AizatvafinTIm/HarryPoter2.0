@@ -233,7 +233,6 @@ public class Main {
     }
 
     public static void second_method(int[][] grid, HashMap<Integer, Character> attributes, HashSet<Pair<Integer, Integer>> inspectors_zone, int scenario) throws InterruptedException {
-        System.out.println("----------------------BFS------------------------");
         HashSet<Pair<Integer, Integer>> small_inspectors_zone = new HashSet<>();
         small_inspectors_zone.add(N);
         small_inspectors_zone.add(F);
@@ -314,6 +313,7 @@ public class Main {
             if (ans_way.contains(F) || ans_way.contains(N)) {
                 System.out.println("Harry Potter was caught. You've lost:(");
             } else {
+                System.out.println("----------------------BFS------------------------");
                 show_ans(grid, ans_way);
             }
         } else {
@@ -327,6 +327,7 @@ public class Main {
                 }
             }
             if (!is_caught) {
+                System.out.println("----------------------BFS------------------------");
                 show_ans(grid, ans_way);
             }
         }
@@ -337,7 +338,6 @@ public class Main {
     }
 
     public static void first_method(int[][] grid, HashSet<Pair<Integer, Integer>> inspectors_zone, int scenario) throws InterruptedException {
-        System.out.println("-----------------Backtracking--------------------");
 
 
         HashSet<Pair<Integer, Integer>> small_inspectors_zone = new HashSet<>();
@@ -427,6 +427,7 @@ public class Main {
             if (ans_way.contains(F) || ans_way.contains(N)) {
                 System.out.println("Harry Potter was caught. You've lost:(");
             } else {
+                System.out.println("-----------------Backtracking--------------------");
                 show_ans(grid, ans_way);
             }
         } else {
@@ -440,6 +441,7 @@ public class Main {
                 }
             }
             if (!is_caught) {
+                System.out.println("-----------------Backtracking--------------------");
                 show_ans(grid, ans_way);
             }
         }
