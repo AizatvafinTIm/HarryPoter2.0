@@ -5,24 +5,122 @@ import javafx.util.Pair;
 import java.util.*;
 
 
+/**
+ * The type Main.
+ */
 public class Main {
+    /**
+     * Number of columns.
+     */
     static int COLS = 9;
+    /**
+     * Number of columns.
+     */
     static int ROWS = 9;
+    /**
+     * The attributes that will be replaced by them id on the grid.
+     */
     static HashMap<Integer, Character> attributes;
+    /**
+     * The Min steps for backtracking to count how many steps Potter did to reach some cell.
+     */
     static int min_steps = Integer.MAX_VALUE;
+    /**
+     * The Backtracking path.
+     */
     static HashMap<Pair<Integer, Integer>, Pair<Pair<Integer, Integer>, Integer>> backtracking_path;
+    /**
+     * The F position of Filch are needed to recover all condition the map(Algorithms don't use this info).
+     */
     static Pair<Integer, Integer> F;
+    /**
+     * The N position of Norris are needed to recover all condition the map(Algorithms don't use this info).
+     */
     static Pair<Integer, Integer> N;
+    /**
+     * The C to recover some part of Potter path.
+     */
     static Pair<Integer, Integer> C;
+    /**
+     * The B to recover some part of Potter path.
+     */
     static Pair<Integer, Integer> B;
+    /**
+     * The E to recover some part of Potter path.
+     */
     static Pair<Integer, Integer> E;
+    /**
+     * The Size ans.
+     */
     static int size_ans = Integer.MAX_VALUE;
+    /**
+     * The minimum size of way that will be choosing.
+     */
     static ArrayList<Pair<Integer, Integer>> ans_way;
+    /**
+     * The Number of steps are needed to count how many steps algo need to accomplish his task.
+     */
     static int number_of_steps = 0;
+    /**
+     * The Time.
+     */
     static long time = 0;
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     * @throws InterruptedException the interrupted exception
+     */
     public static void main(String[] args) throws InterruptedException {
 
+        int inputFormat;
+        int scenario;
+        int[][] grid = new int[ROWS][COLS];
+        HashSet<Pair<Integer, Integer>> inspectors_zone = new HashSet<>();
+
+        Pair<Integer, Integer> general_data = general_input();
+        inputFormat = general_data.getKey();
+        scenario = general_data.getValue();
+
+
+        if (inputFormat == 1) {
+            Pair<int[][], HashSet<Pair<Integer, Integer>>> conditions = random_input(grid, inspectors_zone);
+            show(grid, attributes);
+            if (inspectors_zone.contains(new Pair<>(0, 0))) {
+                System.out.println("Potter was caught immediately");
+                return;
+            }
+            HashSet<Pair<Integer, Integer>> inspect_1 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
+            HashSet<Pair<Integer, Integer>> inspect_2 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
+            first_method(grid, inspect_1, scenario);
+            second_method(grid, attributes, inspect_2, scenario);
+
+        }
+
+        if (inputFormat == 2) {
+            Pair<int[][], HashSet<Pair<Integer, Integer>>> conditions = manual_input(grid, inspectors_zone);
+            grid = conditions.getKey();
+            inspectors_zone = conditions.getValue();
+            show(grid, attributes);
+            if (inspectors_zone.contains(new Pair<>(0, 0))) {
+                System.out.println("Potter was caught immediately");
+                return;
+            }
+            HashSet<Pair<Integer, Integer>> inspect_1 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
+            HashSet<Pair<Integer, Integer>> inspect_2 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
+            first_method(grid, inspect_1, scenario);
+            second_method(grid, attributes, inspect_2, scenario);
+
+        }
+    }
+
+    /**
+     * General input pair. There user choose which scenario and input format(Random or manual) would like to see.
+     *
+     * @return the pair
+     */
+    public static Pair<Integer, Integer> general_input() {
         System.out.println("Which scenario would you like to see: 1 or 2");
         Scanner in = new Scanner(System.in);
         int scenario = in.nextInt();
@@ -40,7 +138,6 @@ public class Main {
         }
 
         in.nextLine();
-        HashSet<Pair<Integer, Integer>> inspectors_zone = new HashSet<>();
         attributes = new HashMap<>();
         attributes.put(0, '-');
         attributes.put(1, 'P');
@@ -50,188 +147,193 @@ public class Main {
         attributes.put(5, 'C');
         attributes.put(6, 'E');
         attributes.put(7, '#');
+        return new Pair<>(inputFormat, scenario);
+    }
 
-        if (inputFormat == 1) {
-            grid[0][0] = 1;
-            ArrayList<Pair<Integer, Integer>> coords = new ArrayList<>();
-            coords.add(new Pair<>(0, 0));
-            for (int i = 0; i < ROWS; ++i) {
-                for (int j = 0; j < COLS; ++j) {
-                    if (i == 0 && j == 0) continue;
-                    grid[i][j] = 0;
-
-                }
-            }
-            for (int i = 1; i < 6; ++i) {
-                int x = (int) (Math.random() * 9);
-                int y = (int) (Math.random() * 9);
-                while (grid[x][y] != 0) {
-                    x = (int) (Math.random() * 9);
-                    y = (int) (Math.random() * 9);
-                }
-
-                if (i == 1) {
-                    F = new Pair<>(x, y);
-                    for (int j = x - 2; j < x + 3; ++j) {
-                        for (int k = y - 2; k < y + 3; ++k) {
-                            if (j > -1 && j < ROWS && k > -1 && k < COLS) {
-                                Pair<Integer, Integer> pair = new Pair<>(j, k);
-                                inspectors_zone.add(pair);
-                            }
-                        }
-                    }
-
-                } else if (i == 2) {
-                    N = new Pair<>(x, y);
-                    for (int j = x - 1; j < x + 2; ++j) {
-                        for (int k = y - 1; k < y + 2; ++k) {
-                            if (j > -1 && j < ROWS && k > -1 && k < COLS) {
-                                Pair<Integer, Integer> pair = new Pair<>(j, k);
-                                inspectors_zone.add(pair);
-                            }
-                        }
-                    }
-                } else {
-                    Pair<Integer, Integer> pair = new Pair<>(x, y);
-                    while (grid[x][y] != 0 || inspectors_zone.contains(pair)) {
-                        x = (int) (Math.random() * 9);
-                        y = (int) (Math.random() * 9);
-                        pair = new Pair<>(x, y);
-                    }
-
-                }
-                if (i == 3) B = new Pair<>(x, y);
-                if (i == 4) C = new Pair<>(x, y);
-                if (i == 5) E = new Pair<>(x, y);
-                grid[x][y] = i + 1;
-
+    /**
+     * Manual input pair.
+     *
+     * @param grid            the grid
+     * @param inspectors_zone the inspectors zone
+     * @return the pair
+     */
+    public static Pair<int[][], HashSet<Pair<Integer, Integer>>> manual_input(int[][] grid, HashSet<Pair<Integer, Integer>> inspectors_zone) {
+        grid[0][0] = 1;
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                if (i == 0 && j == 0) continue;
+                grid[i][j] = 0;
 
             }
-            coords.add(F);
-            coords.add(N);
-            coords.add(B);
-            coords.add(C);
-            coords.add(E);
-
-            show(grid, attributes);
-            if (inspectors_zone.contains(new Pair<>(0, 0))) {
-                System.out.println("Potter was caught immediately");
-                return;
-            }
-            HashSet<Pair<Integer, Integer>> inspect_1 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
-            HashSet<Pair<Integer, Integer>> inspect_2 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
-            first_method(grid, inspect_1, scenario);
-            second_method(grid, attributes, inspect_2, scenario);
-
         }
 
-        if (inputFormat == 2) {
-            grid[0][0] = 1;
-            for (int i = 0; i < ROWS; ++i) {
-                for (int j = 0; j < COLS; ++j) {
-                    if (i == 0 && j == 0) continue;
-                    grid[i][j] = 0;
+        String[] input;
+        Scanner in1 = new Scanner(System.in);
+        input = in1.nextLine().split("[\\Q[] ,\\E]");
 
-                }
+        ArrayList<String> real_input = new ArrayList<>();
+        for (String s : input) {
+            if (!s.equals("")) {
+                real_input.add(s);
             }
-
-            String[] input;
-            Scanner in1 = new Scanner(System.in);
+        }
+        ArrayList<Pair<Integer, Integer>> coords = new ArrayList<>();
+        for (int i = 0; i < real_input.size() - 1; i += 2) {
+            int x = Integer.parseInt(real_input.get(i));
+            int y = Integer.parseInt(real_input.get(i + 1));
+            Pair<Integer, Integer> pair = new Pair<>(x, y);
+            coords.add(pair);
+        }
+        while (coords.size() != 6) {
+            System.out.println("The amount of coordinates are not equal to 6! Type it again:)");
             input = in1.nextLine().split("[\\Q[] ,\\E]");
-
-            ArrayList<String> real_input = new ArrayList<>();
+            real_input = new ArrayList<>();
             for (String s : input) {
                 if (!s.equals("")) {
                     real_input.add(s);
                 }
             }
-            ArrayList<Pair<Integer, Integer>> coords = new ArrayList<>();
+            coords = new ArrayList<>();
             for (int i = 0; i < real_input.size() - 1; i += 2) {
                 int x = Integer.parseInt(real_input.get(i));
                 int y = Integer.parseInt(real_input.get(i + 1));
                 Pair<Integer, Integer> pair = new Pair<>(x, y);
                 coords.add(pair);
             }
-            while (coords.size() != 6) {
-                System.out.println("The amount of coordinates are not equal to 6! Type it again:)");
-                input = in1.nextLine().split("[\\Q[] ,\\E]");
-                real_input = new ArrayList<>();
-                for (String s : input) {
-                    if (!s.equals("")) {
-                        real_input.add(s);
-                    }
-                }
-                coords = new ArrayList<>();
-                for (int i = 0; i < real_input.size() - 1; i += 2) {
-                    int x = Integer.parseInt(real_input.get(i));
-                    int y = Integer.parseInt(real_input.get(i + 1));
-                    Pair<Integer, Integer> pair = new Pair<>(x, y);
-                    coords.add(pair);
-                }
-            }
+        }
 
-            for (int i = 1; i < 6; ++i) {
-                int x = coords.get(i).getKey();
-                int y = coords.get(i).getValue();
-                if (i == 1) {
-                    F = new Pair<>(x, y);
-                    for (int j = x - 2; j < x + 3; ++j) {
-                        for (int k = y - 2; k < y + 3; ++k) {
-                            if (j > -1 && j < ROWS && k > -1 && k < COLS) {
-                                Pair<Integer, Integer> pair = new Pair<>(j, k);
-                                inspectors_zone.add(pair);
-                            }
+        for (int i = 1; i < 6; ++i) {
+            int x = coords.get(i).getKey();
+            int y = coords.get(i).getValue();
+            if (i == 1) {
+                F = new Pair<>(x, y);
+                for (int j = x - 2; j < x + 3; ++j) {
+                    for (int k = y - 2; k < y + 3; ++k) {
+                        if (j > -1 && j < ROWS && k > -1 && k < COLS) {
+                            Pair<Integer, Integer> pair = new Pair<>(j, k);
+                            inspectors_zone.add(pair);
                         }
                     }
-                } else if (i == 2) {
-                    N = new Pair<>(x, y);
-                    for (int j = x - 1; j < x + 2; ++j) {
-                        for (int k = y - 1; k < y + 2; ++k) {
-                            if (j > -1 && j < ROWS && k > -1 && k < COLS) {
-                                Pair<Integer, Integer> pair = new Pair<>(j, k);
-                                inspectors_zone.add(pair);
-                            }
+                }
+            } else if (i == 2) {
+                N = new Pair<>(x, y);
+                for (int j = x - 1; j < x + 2; ++j) {
+                    for (int k = y - 1; k < y + 2; ++k) {
+                        if (j > -1 && j < ROWS && k > -1 && k < COLS) {
+                            Pair<Integer, Integer> pair = new Pair<>(j, k);
+                            inspectors_zone.add(pair);
                         }
                     }
-                } else if (i == 3) {
-                    while (!check_next_node_1(x, y, inspectors_zone)) {
-                        System.out.println("Book is located in incorrect place! Please change his position (x,y) (Separate your input by Enter)");
-                        x = in1.nextInt();
-                        y = in1.nextInt();
-                    }
-                    B = new Pair<>(x, y);
-                } else if (i == 4) {
-                    while (!check_next_node_1(x, y, inspectors_zone)) {
-                        System.out.println("Cloak is located in incorrect place! Please change his position (x,y) (Separate your input by Enter)");
-                        x = in1.nextInt();
-                        y = in1.nextInt();
-                    }
-                    C = new Pair<>(x, y);
-                } else if (i == 5) {
-                    while (!check_next_node_1(x, y, inspectors_zone)) {
-                        System.out.println("Exit is located in incorrect place! Please change his position (x,y) (Separate your input by Enter)");
-                        x = in1.nextInt();
-                        y = in1.nextInt();
-                    }
-                    E = new Pair<>(x, y);
                 }
-                grid[x][y] = i + 1;
-
+            } else if (i == 3) {
+                while (!check_next_node_1(x, y, inspectors_zone)) {
+                    System.out.println("Book is located in incorrect place! Please change his position (x,y) (Separate your input by Enter)");
+                    x = in1.nextInt();
+                    y = in1.nextInt();
+                }
+                B = new Pair<>(x, y);
+            } else if (i == 4) {
+                while (!check_next_node_1(x, y, inspectors_zone)) {
+                    System.out.println("Cloak is located in incorrect place! Please change his position (x,y) (Separate your input by Enter)");
+                    x = in1.nextInt();
+                    y = in1.nextInt();
+                }
+                C = new Pair<>(x, y);
+            } else if (i == 5) {
+                while (!check_next_node_1(x, y, inspectors_zone)) {
+                    System.out.println("Exit is located in incorrect place! Please change his position (x,y) (Separate your input by Enter)");
+                    x = in1.nextInt();
+                    y = in1.nextInt();
+                }
+                E = new Pair<>(x, y);
             }
-
-            show(grid, attributes);
-            if (inspectors_zone.contains(new Pair<>(0, 0))) {
-                System.out.println("Potter was caught immediately");
-                return;
-            }
-            HashSet<Pair<Integer, Integer>> inspect_1 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
-            HashSet<Pair<Integer, Integer>> inspect_2 = (HashSet<Pair<Integer, Integer>>) inspectors_zone.clone();
-            first_method(grid, inspect_1, scenario);
-            second_method(grid, attributes, inspect_2, scenario);
+            grid[x][y] = i + 1;
 
         }
+        return new Pair<>(grid, inspectors_zone);
+
     }
 
+    /**
+     * Random input pair.
+     *
+     * @param grid            the grid
+     * @param inspectors_zone the inspectors zone
+     * @return the pair
+     */
+    public static Pair<int[][], HashSet<Pair<Integer, Integer>>> random_input(int[][] grid, HashSet<Pair<Integer, Integer>> inspectors_zone) {
+        grid[0][0] = 1;
+        ArrayList<Pair<Integer, Integer>> coords = new ArrayList<>();
+        coords.add(new Pair<>(0, 0));
+        for (int i = 0; i < ROWS; ++i) {
+            for (int j = 0; j < COLS; ++j) {
+                if (i == 0 && j == 0) continue;
+                grid[i][j] = 0;
+
+            }
+        }
+        for (int i = 1; i < 6; ++i) {
+            int x = (int) (Math.random() * 9);
+            int y = (int) (Math.random() * 9);
+            while (grid[x][y] != 0) {
+                x = (int) (Math.random() * 9);
+                y = (int) (Math.random() * 9);
+            }
+
+            if (i == 1) {
+                F = new Pair<>(x, y);
+                for (int j = x - 2; j < x + 3; ++j) {
+                    for (int k = y - 2; k < y + 3; ++k) {
+                        if (j > -1 && j < ROWS && k > -1 && k < COLS) {
+                            Pair<Integer, Integer> pair = new Pair<>(j, k);
+                            inspectors_zone.add(pair);
+                        }
+                    }
+                }
+
+            } else if (i == 2) {
+                N = new Pair<>(x, y);
+                for (int j = x - 1; j < x + 2; ++j) {
+                    for (int k = y - 1; k < y + 2; ++k) {
+                        if (j > -1 && j < ROWS && k > -1 && k < COLS) {
+                            Pair<Integer, Integer> pair = new Pair<>(j, k);
+                            inspectors_zone.add(pair);
+                        }
+                    }
+                }
+            } else {
+                Pair<Integer, Integer> pair = new Pair<>(x, y);
+                while (grid[x][y] != 0 || inspectors_zone.contains(pair)) {
+                    x = (int) (Math.random() * 9);
+                    y = (int) (Math.random() * 9);
+                    pair = new Pair<>(x, y);
+                }
+
+            }
+            if (i == 3) B = new Pair<>(x, y);
+            if (i == 4) C = new Pair<>(x, y);
+            if (i == 5) E = new Pair<>(x, y);
+            grid[x][y] = i + 1;
+
+
+        }
+        coords.add(F);
+        coords.add(N);
+        coords.add(B);
+        coords.add(C);
+        coords.add(E);
+        return new Pair<>(grid, inspectors_zone);
+    }
+
+    /**
+     * Second method.There was implemented whole logic of finding correct path by bfs.
+     *
+     * @param grid            the grid
+     * @param attributes      the attributes
+     * @param inspectors_zone the inspectors zone
+     * @param scenario        the scenario
+     * @throws InterruptedException the interrupted exception
+     */
     public static void second_method(int[][] grid, HashMap<Integer, Character> attributes, HashSet<Pair<Integer, Integer>> inspectors_zone, int scenario) throws InterruptedException {
         HashSet<Pair<Integer, Integer>> small_inspectors_zone = new HashSet<>();
         small_inspectors_zone.add(N);
@@ -337,6 +439,14 @@ public class Main {
         size_ans = Integer.MAX_VALUE;
     }
 
+    /**
+     * First method.There was implemented whole logic of finding correct path by backtracking.
+     *
+     * @param grid            the grid
+     * @param inspectors_zone the inspectors zone
+     * @param scenario        the scenario
+     * @throws InterruptedException the interrupted exception
+     */
     public static void first_method(int[][] grid, HashSet<Pair<Integer, Integer>> inspectors_zone, int scenario) throws InterruptedException {
 
 
@@ -451,6 +561,13 @@ public class Main {
         size_ans = Integer.MAX_VALUE;
     }
 
+    /**
+     * Choosing the best. Basically, we have more than one way to reach the door(for example, Cloak - Book - Door or Book - Door  ) and we need to choose the best one.
+     *
+     * @param ways        the ways
+     * @param ans         the ans
+     * @param current_pos the current pos
+     */
     public static void choosing_the_best(HashMap<String, ArrayList<Pair<Integer, Integer>>> ways, ArrayList<Pair<Integer, Integer>> ans, String current_pos) {
         if (current_pos.length() == 2 && current_pos.substring(current_pos.length() - 1).equals("E") && ans.size() < size_ans) {
             ans_way = ans;
@@ -486,6 +603,13 @@ public class Main {
         }
     }
 
+    /**
+     * Recovering path backtrack array list.
+     *
+     * @param start the start
+     * @param dest  the dest
+     * @return the array list
+     */
     public static ArrayList<Pair<Integer, Integer>> recovering_path_backtrack(Pair<Integer, Integer> start, Pair<Integer, Integer> dest) {
         ArrayList<Pair<Integer, Integer>> answer = new ArrayList<>();
         if (backtracking_path.containsKey(dest)) {
@@ -502,6 +626,14 @@ public class Main {
 
     }
 
+    /**
+     * Recovering path bfs array list.
+     *
+     * @param start the start
+     * @param dest  the dest
+     * @param path  the path
+     * @return the array list
+     */
     public static ArrayList<Pair<Integer, Integer>> recovering_path_bfs(Pair<Integer, Integer> start, Pair<Integer, Integer> dest, HashMap<Pair<Integer, Integer>, Pair<Integer, Integer>> path) {
         ArrayList<Pair<Integer, Integer>> ans = new ArrayList<>();
         if (dest != null) {
@@ -515,6 +647,12 @@ public class Main {
         return ans;
     }
 
+    /**
+     * Showing the map of Actors with objects.
+     *
+     * @param grid       the grid
+     * @param attributes the attributes
+     */
     public static void show(int[][] grid, HashMap<Integer, Character> attributes) {
 
         for (int i = 0; i < ROWS; ++i) {
@@ -538,6 +676,12 @@ public class Main {
         }
     }
 
+    /**
+     * Showing the correct path from start to door.
+     *
+     * @param grid the grid
+     * @param ans  the ans
+     */
     public static void show_ans(int[][] grid, ArrayList<Pair<Integer, Integer>> ans) {
         int[][] updated_grid = new int[ROWS][COLS];
         for (int i = 0; i < ROWS; ++i) {
@@ -579,6 +723,16 @@ public class Main {
         System.out.println("You are winner!!!");
     }
 
+    /**
+     * Bfs algorithm.
+     *
+     * @param grid            the grid
+     * @param start           the start
+     * @param idOfitem        the id ofitem
+     * @param inspectors_zone the inspectors zone
+     * @param scenario        the scenario
+     * @return the pair of path and destination point
+     */
     public static Pair<HashMap<Pair<Integer, Integer>, Pair<Integer, Integer>>, Pair<Integer, Integer>> bfs(int[][] grid, Pair<Integer, Integer> start, int idOfitem, HashSet<Pair<Integer, Integer>> inspectors_zone, int scenario) {
         Queue<Pair<Integer, Integer>> queue = new LinkedList();
 
@@ -607,6 +761,16 @@ public class Main {
         return new Pair<>(visited, dest);
     }
 
+    /**
+     * Backtracking algorithm. It changes the global variables like backtracking_path
+     *
+     * @param grid            the grid
+     * @param node            the node
+     * @param idOfitem        the id ofi tem
+     * @param steps           the steps
+     * @param inspectors_zone the inspectors zone
+     * @param scenario        the scenario
+     */
     public static void backtracking(int[][] grid, Pair<Integer, Integer> node, int idOfitem, int steps, HashSet<Pair<Integer, Integer>> inspectors_zone, int scenario) {
 
         if (steps < min_steps) {
@@ -630,6 +794,14 @@ public class Main {
 
     }
 
+    /**
+     * Gets next nodes. Returns all available adjacent cells where Potter con move on.
+     *
+     * @param cur             the cur
+     * @param inspectors_zone the inspectors zone
+     * @param scenario        the scenario
+     * @return the next nodes
+     */
     public static ArrayList<Pair<Integer, Integer>> get_next_nodes(Pair<Integer, Integer> cur, HashSet<Pair<Integer, Integer>> inspectors_zone, int scenario) {
         ArrayList<Pair<Integer, Integer>> next_nodes = new ArrayList<>();
         int[][] ways = {{-1, 0},
@@ -657,11 +829,26 @@ public class Main {
         return next_nodes;
     }
 
+    /**
+     * Check next node 1 boolean. Returns adjacent cells taking into account first scenario.
+     *
+     * @param x               the x
+     * @param y               the y
+     * @param inspectors_zone the inspectors zone
+     * @return the boolean
+     */
     public static boolean check_next_node_1(int x, int y, HashSet<Pair<Integer, Integer>> inspectors_zone) {
         Pair<Integer, Integer> next_pos = new Pair<>(x, y);
         return x > -1 && x < ROWS && y > -1 && y < COLS && !inspectors_zone.contains(next_pos);
     }
 
+    /**
+     * Check next node 2 boolean.  Returns adjacent cells taking into account second scenario.
+     *
+     * @param x the x
+     * @param y the y
+     * @return the boolean
+     */
     public static boolean check_next_node_2(int x, int y) {
         Pair<Integer, Integer> next_pos = new Pair<>(x, y);
         return x > -1 && x < ROWS && y > -1 && y < COLS;
