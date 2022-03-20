@@ -66,16 +66,6 @@ Program make the same stuff as first method but use bfs algorithm and also there
 4. Sensors: 
     - check_next_node_1() and check_next_node_2()
 
-## Statistics
-
-| Algorithm | Scenario | Win percentage | Lose percentage(There’s no path) | Lose percentage(
-Step on inspector’s zone) | Avg. Time(sec) |
-| --- | --- | --- | --- | --- | --- |
-| Backtracking | 1 | ~97% | ~3% | 0% | 0.0556002 |
-| BFS | 1 | ~97% | ~3% | 0% | 5.011E-4 |
-| Backtracking | 2 | 80% | 11% | 9% | 0.1136111 |
-| BFS | 2 | 82% | 9% | 9% | 7.21E-4 |
-
 ## Conclusion
 
 So, as we can see that second scenario is not good way for Potter, because if he noticed some cells ahead he assume that probably the closest cell in this direction also over enemy’s eyes, hence Harry do not want to go there. This is a problem of high lose percentage “There’s no path”. But algorithms almost gave the results, but BFS do work much faster.
