@@ -2,7 +2,7 @@
 
 # General explanation what algorithm does
 
-![potter.png](Assignment%202369b/potter.png)
+![potter.png](https://w7.pngwing.com/pngs/497/245/png-transparent-harry-potter-illustration-harry-potter-drawing-cartoon-professor-severus-snape-animation-cartoon-baby-toy-supplies-chibi-fictional-character-human-behavior.png)
 
 There are several ways how Harry Potter able to take a book and reach the exit door:
 
